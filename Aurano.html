@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aurano Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a1f;--pn:#15153d;--ln:#2b2b6b;--y:#ffd23f;--r:#ff4d5e;--g:#3ddc84;--c:#38d6ff;--t:#f2f2ff;--m:#8d8dc4}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--t);font:11px/1.8 'Press Start 2P',monospace;min-height:100vh;position:relative;overflow-x:hidden}
+#bgfx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.55}
+body::after{content:'';position:fixed;inset:0;background:linear-gradient(#ffffff08 1px,transparent 1px);background-size:100% 4px;pointer-events:none;z-index:1}
+main{position:relative;z-index:2}
+main{max-width:920px;margin:0 auto;padding:24px 14px 48px;text-align:center}
+h1{font-size:clamp(30px,9vw,72px);line-height:1.15;color:var(--y);text-shadow:4px 4px 0 var(--r),8px 8px 0 #0007;margin-top:8vh}
+h1 span{display:block;color:var(--c);text-shadow:4px 4px 0 #1b4b80,8px 8px 0 #0007}
+h2{font-size:clamp(12px,3.6vw,18px);color:var(--y)}
+h3{font-size:12px;color:var(--y)}
+.slogan{color:var(--m);margin:28px 0 36px}
+.credit{color:var(--m);font-size:8px;margin-top:48px}
+.btn{font:inherit;color:#111;background:var(--y);border:0;padding:14px 18px;margin:6px;cursor:pointer;box-shadow:0 5px 0 #a87f00}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #a87f00}
+.btn.r{background:var(--r);color:#fff;box-shadow:0 5px 0 #97202f}
+.btn.c{background:var(--c);box-shadow:0 5px 0 #17789a}
+.btn.s{padding:10px 12px;font-size:10px}
+.btn.on{background:var(--g);box-shadow:0 5px 0 #1c8a50}
+.big{font-size:15px;padding:18px 26px;animation:bl 1.1s steps(2) infinite}
+@keyframes bl{50%{opacity:.55}}
+:focus-visible{outline:3px solid var(--c);outline-offset:3px}
+.bar{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:20px}
+.card{font:inherit;color:var(--t);background:var(--pn);border:4px solid var(--ln);padding:22px 12px;cursor:pointer}
+.card:hover{border-color:var(--y)}
+.card .ic{font-size:34px;margin-bottom:10px}
+.card p{color:var(--m);font-size:9px;margin-top:6px}
+.hud{display:flex;justify-content:center;gap:10px;margin:14px 0;flex-wrap:wrap}
+.hud div{background:var(--pn);border:3px solid var(--ln);padding:8px 12px;min-width:92px;color:var(--m);font-size:9px}
+.hud b{display:block;color:var(--y);font-size:14px;margin-top:4px}
+.stage{position:relative;display:inline-block;margin:10px 0}
+.stage canvas{width:min(78vw,280px);height:auto;border:4px solid var(--ln);display:block;margin:auto}
+.note{color:var(--m);font-size:9px;margin:10px 0 14px}
+.pad{display:flex;justify-content:center;gap:6px;margin-top:12px;flex-wrap:wrap}
+.ov{position:absolute;inset:0;background:#050514ee;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;z-index:5;border:4px solid var(--y)}
+.ov p{margin:12px 0;color:var(--c)}
+.cell{aspect-ratio:1;font:inherit;background:var(--pn);color:var(--t);border:3px solid var(--ln);cursor:pointer;padding:0}
+.ms{display:grid;gap:2px;width:min(92vw,420px)}
+.ms .cell{font-size:clamp(8px,2.6vw,13px);border-width:2px}
+.ms .op{background:#05051a;cursor:default}
+.ms [data-n="1"]{color:var(--c)}.ms [data-n="2"]{color:var(--g)}.ms [data-n="3"]{color:var(--r)}.ms [data-n="4"]{color:var(--y)}.ms [data-n="5"],.ms [data-n="6"]{color:#c58bff}
+.ms .bomb{background:var(--r)}
+.ttt{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:min(80vw,300px);margin:12px auto 0}
+.t{font-size:30px}.t.X{color:var(--c)}.t.O{color:var(--r)}
+.g48{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:min(88vw,340px);background:var(--ln);padding:6px;touch-action:none}
+.g48 i{display:grid;place-items:center;aspect-ratio:1;font-style:normal;font-size:clamp(9px,3.6vw,16px);color:#fff;background:#0b0b2a}
+.react{width:min(92vw,420px);height:220px;font:inherit;font-size:12px;color:#fff;border:4px solid #000;cursor:pointer;padding:10px}
+.react.idle{background:var(--pn)}.react.wait{background:var(--r)}.react.go{background:var(--g);color:#111}.react.early{background:#555}
+.mem{display:grid;gap:8px;width:min(92vw,440px)}
+.mem .cell{font-size:clamp(16px,6vw,28px)}
+.mem .up{background:#22226a}.mem .ok{border-color:var(--g)}
+.tw{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;margin:auto;font-size:9px}
+th,td{border:2px solid var(--ln);padding:8px 10px}
+th{color:var(--y)}
+.sc{background:var(--pn);border:4px solid var(--ln);padding:16px}.sc table{width:100%;margin-top:12px}.sc td{border:0;border-bottom:2px solid var(--ln);text-align:left;padding:8px 4px;font-size:9px}.sc td+td{text-align:right;color:var(--y)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="bgfx"></canvas>
+<main id="app"></main>
+<script>
+
+/* ---------- BACKGROUND FX: retro Pac-Man style drifter ---------- */
+(function(){
+ const cv=document.getElementById('bgfx'),x=cv.getContext('2d');
+ let W,H,dots=[],reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ function size(){W=cv.width=innerWidth;H=cv.height=innerHeight;
+  dots=[];const gap=34,rows=Math.ceil(H/gap),cols=Math.ceil(W/gap);
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(Math.random()<.5)dots.push({x:c*gap+gap/2,y:r*gap+gap/2});}
+ addEventListener('resize',size);size();
+
+ function pac(px,py,dir,mouth,col){
+  x.save();x.translate(px,py);x.rotate(dir);x.fillStyle=col;
+  const o=Math.abs(Math.sin(mouth))*.65;
+  x.beginPath();x.arc(0,0,13,o,Math.PI*2-o);x.lineTo(0,0);x.closePath();x.fill();
+  x.restore();}
+
+ function ghost(px,py,col,bob){
+  x.save();x.translate(px,py+Math.sin(bob)*2);x.fillStyle=col;
+  x.beginPath();x.arc(0,-1,11,Math.PI,0);x.lineTo(11,11);
+  for(let i=0;i<4;i++){x.lineTo(11-(i+.5)*5.5,i%2?11:6);}
+  x.lineTo(-11,11);x.closePath();x.fill();
+  x.fillStyle='#eafcff';x.beginPath();x.arc(-4.5,-2,3.4,0,7);x.arc(4.5,-2,3.4,0,7);x.fill();
+  x.fillStyle='#123';x.beginPath();x.arc(-3.5,-2,1.5,0,7);x.arc(5.5,-2,1.5,0,7);x.fill();
+  x.restore();}
+
+ const P=[{x:-40,y:0,s:.55,dir:0,col:'#ffd23f'}];
+ const G=[{y:0,s:.34,col:'#ff4d5e',ph:0},{y:0,s:.27,col:'#38d6ff',ph:2},{y:0,s:.41,col:'#c58bff',ph:4}];
+ let t=0;
+
+ function frame(){
+  t+=1;
+  x.clearRect(0,0,W,H);
+  x.fillStyle='#ffffff14';
+  dots.forEach(d=>{x.beginPath();x.arc(d.x,d.y,2,0,7);x.fill();});
+
+  const p=P[0];p.x+=p.s;if(p.x>W+40)p.x=-40;
+  const py=H*.18;
+  pac(p.x,py,0,t*.12,p.col);
+
+  G.forEach((g,i)=>{
+   const gy=H*(.4+i*.18);
+   let gx=(t*g.s + i*260)%(W+80)-40;
+   if(i%2)gx=W-gx;
+   ghost(gx, gy, g.col, t*.05+g.ph);
+  });
+
+  if(!reduced)requestAnimationFrame(frame);
+ }
+ frame();
+ if(reduced){x.fillStyle='#ffffff10';dots.forEach(d=>{x.beginPath();x.arc(d.x,d.y,2,0,7);x.fill();});}
+})();
+
+const $=id=>document.getElementById(id),app=$('app');
+const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x)e.textContent=x;return e};
+const K='aurano-arcade-v1';let S={};
+try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const fmt=(k,v)=>k=='pts'?v+' pts':k=='ms'?Math.round(v)+' ms':v.toFixed(1)+' s';
+const dur=s=>s<60?(s|0)+'s':s<3600?(s/60|0)+'m '+(s%60|0)+'s':(s/3600|0)+'h '+(s/60%60|0)+'m';
+let cur=null;
+const stop=()=>{if(cur){clearInterval(cur.iv);cur.clean&&cur.clean();cur=null}};
+const view=h=>{stop();app.innerHTML=h;scrollTo(0,0)};
+
+/* ---------- GAMES ---------- */
+const GAMES={
+tetris:{n:'Tetris',i:'🧱',k:'pts',h:'Arrows move, up rotates, space drops. On phones use the buttons.',run(el,d,h){
+ const cv=mk('canvas');cv.width=240;cv.height=480;el.append(cv);const x=cv.getContext('2d');
+ const P=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[0,1,1],[1,1,0]],[[1,1,0],[0,1,1]]];
+ const C=['#38d6ff','#ffd23f','#b56cff','#4d7cff','#ff9f43','#3ddc84','#ff4d5e'];
+ let b=Array.from({length:20},()=>Array(10).fill(0)),p,px,py,sc=0,dead=0,tk,raf;
+ const rot=m=>m[0].map((_,i)=>m.map(r=>r[i]).reverse());
+ const hit=(m,X,Y)=>m.some((r,j)=>r.some((v,i)=>v&&(X+i<0||X+i>9||Y+j>19||(Y+j>=0&&b[Y+j][X+i]))));
+ const end=()=>{dead=1;clearInterval(tk);h.end('Game over',sc)};
+ const nw=()=>{const i=Math.random()*7|0;p={m:P[i],c:i+1};px=3;py=0;if(hit(p.m,px,py))end()};
+ const lock=()=>{p.m.forEach((r,j)=>r.forEach((v,i)=>v&&(b[py+j][px+i]=p.c)));let n=0;
+  b=b.filter(r=>r.some(v=>!v)||(n++,0));while(b.length<20)b.unshift(Array(10).fill(0));
+  sc+=10+[0,100,300,500,800][n];h.score(sc);nw()};
+ const mv=(dx,dy)=>{if(dead)return;if(!hit(p.m,px+dx,py+dy)){px+=dx;py+=dy}else if(dy)lock()};
+ const R=()=>{if(dead)return;const r=rot(p.m);for(const k of[0,-1,1,-2,2])if(!hit(r,px+k,py)){p.m=r;px+=k;return}};
+ const drop=()=>{if(dead)return;while(!hit(p.m,px,py+1))py++;lock()};
+ const draw=()=>{x.fillStyle='#050514';x.fillRect(0,0,240,480);
+  const cell=(i,j,c)=>{x.fillStyle=C[c-1];x.fillRect(i*24+1,j*24+1,22,22)};
+  b.forEach((r,j)=>r.forEach((v,i)=>v&&cell(i,j,v)));
+  if(!dead)p.m.forEach((r,j)=>r.forEach((v,i)=>v&&cell(px+i,py+j,p.c)));
+  raf=requestAnimationFrame(draw)};
+ const kd=e=>{const k=e.key;if(k=='ArrowLeft')mv(-1,0);else if(k=='ArrowRight')mv(1,0);else if(k=='ArrowDown')mv(0,1);else if(k=='ArrowUp')R();else if(k==' ')drop();else return;e.preventDefault()};
+ addEventListener('keydown',kd);
+ const pad=mk('div','pad');
+ [['◀',()=>mv(-1,0)],['⟳',R],['▶',()=>mv(1,0)],['▼',()=>mv(0,1)],['⤓',drop]].forEach(([t,f])=>{const bt=mk('button','btn s',t);bt.onclick=f;pad.append(bt)});
+ el.append(pad);nw();tk=setInterval(()=>mv(0,1),{easy:800,medium:500,hard:250}[d]);draw();
+ return()=>{clearInterval(tk);cancelAnimationFrame(raf);removeEventListener('keydown',kd)}}},
+
+mines:{n:'Minesweeper',i:'💣',k:'time',h:'Click to reveal. Right-click or use the flag button to mark mines.',run(el,d,h){
+ const [n,m]={easy:[9,10],medium:[12,28],hard:[14,45]}[d];
+ let cells=[],open=0,over=0,first=1,flag=0;
+ const fb=mk('button','btn s','⚑ Flag: off');fb.onclick=()=>{flag=!flag;fb.textContent='⚑ Flag: '+(flag?'on':'off')};
+ const g=mk('div','ms');g.style.gridTemplateColumns=`repeat(${n},1fr)`;el.append(fb,g);
+ const nb=i=>{const r=i/n|0,c=i%n,o=[];for(let a=-1;a<2;a++)for(let b=-1;b<2;b++){const R=r+a,C=c+b;if((a||b)&&R>=0&&R<n&&C>=0&&C<n)o.push(R*n+C)}return o};
+ const flood=i=>{const c=cells[i];if(c.o||c.f)return;c.o=1;open++;c.b.classList.add('op');c.b.textContent=c.n||'';c.b.dataset.n=c.n;if(!c.n)nb(i).forEach(flood)};
+ const act=(i,f)=>{if(over)return;const c=cells[i];
+  if(f){if(!c.o){c.f=!c.f;c.b.textContent=c.f?'⚑':''}return}
+  if(c.f||c.o)return;
+  if(first){first=0;const ex=[i,...nb(i)];let k=0;while(k<m){const j=Math.random()*n*n|0;if(!cells[j].m&&!ex.includes(j)){cells[j].m=1;k++}}cells.forEach((q,j)=>q.n=nb(j).filter(z=>cells[z].m).length)}
+  if(c.m){over=1;cells.forEach(q=>{if(q.m){q.b.textContent='💣';q.b.classList.add('bomb')}});return h.T(()=>h.end('Boom! Mine hit',0,1),700)}
+  flood(i);h.score(open);if(open==n*n-m){over=1;h.end('Field cleared!')}};
+ for(let i=0;i<n*n;i++){const b=mk('button','cell');cells.push({b,m:0,n:0,o:0,f:0});g.append(b);
+  b.onclick=()=>act(i,flag);b.oncontextmenu=e=>{e.preventDefault();act(i,1)}}}},
+
+ttt:{n:'Tic-Tac-Toe',i:'❌',k:'pts',h:'Five rounds vs the computer. Your win: 10 / 20 / 30 pts by level. Draw: 5 pts. Computer win: 0 pts.',run(el,d,h){
+ const L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ const WP={easy:10,medium:20,hard:30}[d];let b,rd=0,pts=0,pw=0,cw=0,busy=0;const info=mk('p','note');const g=mk('div','ttt');el.append(info,g);
+ const win=s=>{for(const l of L)if(s[l[0]]&&s[l[0]]==s[l[1]]&&s[l[0]]==s[l[2]])return s[l[0]];return s.includes(0)?0:'d'};
+ const mm=(s,t)=>{const w=win(s);if(w=='X')return -1;if(w=='O')return 1;if(w=='d')return 0;let best=t=='O'?-9:9;
+  s.forEach((v,i)=>{if(!v){s[i]=t;const r=mm(s,t=='O'?'X':'O');s[i]=0;best=t=='O'?Math.max(best,r):Math.min(best,r)}});return best};
+ const ai=()=>{const e=[];b.forEach((v,i)=>!v&&e.push(i));
+  if(!(d=='hard'||(d=='medium'&&Math.random()<.6)))return e[Math.random()*e.length|0];
+  let bs=-9,mvs=[];e.forEach(i=>{b[i]='O';const r=mm(b,'X');b[i]=0;if(r>bs){bs=r;mvs=[i]}else if(r==bs)mvs.push(i)});
+  return mvs[Math.random()*mvs.length|0]};
+ const cells=[];
+ const put=(i,t)=>{b[i]=t;cells[i].textContent=t;cells[i].className='cell t '+t;const w=win(b);
+  if(w){busy=1;
+   if(w=='X'){pts+=WP;pw++;h.tally('playerWin')}else if(w=='d'){pts+=5;h.tally('draw')}else{cw++;h.tally('computerWin')}
+   h.score(pts);
+   info.textContent=w=='X'?`You won the round! +${WP} pts`:w=='d'?'Draw! +5 pts':'Computer won the round. +0 pts';
+   h.T(()=>{rd++;rd<5?round():h.end(pw>cw?'You won the match!':cw>pw?'Computer won the match':'Match drawn',pts)},1500);return}
+  busy=t=='X';if(t=='X')h.T(()=>put(ai(),'O'),350)};
+ const round=()=>{b=Array(9).fill(0);cells.forEach(c=>{c.textContent='';c.className='cell t'});
+  info.textContent=`Round ${rd+1} of 5. You (X) ${pw} - ${cw} Computer (O)`;busy=0;if(rd%2){busy=1;h.T(()=>put(ai(),'O'),400)}};
+ for(let i=0;i<9;i++){const c=mk('button','cell t');c.onclick=()=>{if(!busy&&!b[i])put(i,'X')};g.append(c);cells.push(c)}
+ round()}},
+
+g2048:{n:'2048',i:'🔢',k:'pts',h:'Arrow keys or swipe. Merge equal tiles to reach the goal tile.',run(el,d,h){
+ const goal={easy:512,medium:2048,hard:4096}[d];let b=Array(16).fill(0),sc=0,fin=0;
+ const g=mk('div','g48');el.append(g);
+ const add=()=>{const e=[];b.forEach((v,i)=>v||e.push(i));b[e[Math.random()*e.length|0]]=Math.random()<.9?2:4};
+ const line=a=>{a=a.filter(v=>v);for(let i=0;i<a.length-1;i++)if(a[i]==a[i+1]){a[i]*=2;sc+=a[i];a.splice(i+1,1)}while(a.length<4)a.push(0);return a};
+ const can=()=>b.includes(0)||b.some((v,i)=>(i%4<3&&v==b[i+1])||(i<12&&v==b[i+4]));
+ const draw=()=>{g.innerHTML=b.map(v=>`<i style="${v?`background:hsl(${(Math.log2(v)*38+190)%360} 70% 42%)`:''}">${v||''}</i>`).join('')};
+ const mv=dir=>{if(fin)return;const o=b.join();
+  for(let k=0;k<4;k++){const idx=[0,1,2,3].map(j=>dir<2?k*4+j:j*4+k);if(dir%2)idx.reverse();const r=line(idx.map(i=>b[i]));idx.forEach((i,j)=>b[i]=r[j])}
+  if(b.join()==o)return;add();h.score(sc);draw();
+  if(b.some(v=>v>=goal)){fin=1;return h.end('You reached '+goal+'!',sc)}
+  if(!can()){fin=1;h.end('No moves left',sc)}};
+ const M={ArrowLeft:0,ArrowRight:1,ArrowUp:2,ArrowDown:3};
+ const kd=e=>{if(e.key in M){e.preventDefault();mv(M[e.key])}};addEventListener('keydown',kd);
+ let sx,sy;g.ontouchstart=e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY};
+ g.ontouchend=e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;mv(Math.abs(dx)>Math.abs(dy)?(dx>0?1:0):(dy>0?3:2))};
+ add();add();draw();return()=>removeEventListener('keydown',kd)}},
+
+reaction:{n:'Reaction',i:'⚡',k:'ms',h:'Tap when the screen turns green. Five rounds, lowest average wins.',run(el,d,h){
+ const [lo,hi]={easy:[1500,4000],medium:[1000,3000],hard:[500,2500]}[d];
+ let r=0,times=[],st=0,tm,s='idle';
+ const pad=mk('button','react idle','Tap to start');el.append(pad);
+ const next=()=>{s='wait';pad.className='react wait';pad.textContent=`Round ${r+1} of 5. Wait for green...`;
+  tm=h.T(()=>{s='go';st=performance.now();pad.className='react go';pad.textContent='TAP NOW!'},lo+Math.random()*(hi-lo))};
+ pad.onclick=()=>{
+  if(s=='idle'||s=='early'||s=='between')return next();
+  if(s=='wait'){clearTimeout(tm);s='early';pad.className='react early';pad.textContent='Too soon! Tap to retry';return}
+  if(s=='go'){const t=performance.now()-st;times.push(t);r++;h.score(Math.round(t));
+   if(r==5){s='done';return h.end('Average of 5 rounds',times.reduce((a,b)=>a+b)/5)}
+   s='between';pad.className='react idle';pad.textContent=Math.round(t)+' ms. Tap for next round'}}}},
+
+memory:{n:'Memory',i:'🃏',k:'time',h:'Flip two cards at a time and match every pair. Score shows your moves.',run(el,d,h){
+ const [c,rw]={easy:[4,3],medium:[4,4],hard:[6,4]}[d];
+ const E=['👾','🍄','👻','⭐','🍒','🎮','🚀','🍕','🔥','💎','🐍','🎯'];
+ const np=c*rw/2;const deck=[...E.slice(0,np),...E.slice(0,np)].sort(()=>Math.random()-.5);
+ let a=null,lock=0,mv=0,ok=0;const g=mk('div','mem');g.style.gridTemplateColumns=`repeat(${c},1fr)`;el.append(g);
+ deck.forEach(e=>{const b=mk('button','cell');g.append(b);
+  b.onclick=()=>{if(lock||b.classList.contains('up'))return;b.classList.add('up');b.textContent=e;
+   if(!a){a=b;return}mv++;h.score(mv);
+   if(a.textContent==e){ok++;a.classList.add('ok');b.classList.add('ok');a=null;if(ok==np)h.end('All pairs found in '+mv+' moves!')}
+   else{lock=1;const p=a;a=null;h.T(()=>{p.classList.remove('up');b.classList.remove('up');p.textContent=b.textContent='';lock=0},700)}}})}},
+snake:{n:'Snake',i:'🐍',k:'pts',h:'Arrow keys, swipe, or the buttons to steer. Easy mode wraps around the walls.',run(el,d,h){
+ const N=15,cv=mk('canvas');cv.width=cv.height=300;cv.style.touchAction='none';el.append(cv);const x=cv.getContext('2d');
+ let s=[[7,7],[6,7],[5,7]],dr=[1,0],nd=[1,0],f,sc=0,tk;
+ const food=()=>{do f=[Math.random()*N|0,Math.random()*N|0];while(s.some(q=>q[0]==f[0]&&q[1]==f[1]))};
+ const draw=()=>{x.fillStyle='#050514';x.fillRect(0,0,300,300);x.fillStyle='#ff4d5e';x.fillRect(f[0]*20+3,f[1]*20+3,14,14);
+  s.forEach((q,i)=>{x.fillStyle=i?'#3ddc84':'#ffd23f';x.fillRect(q[0]*20+1,q[1]*20+1,18,18)})};
+ const step=()=>{dr=nd;let a=s[0][0]+dr[0],b=s[0][1]+dr[1];
+  if(d=='easy'){a=(a+N)%N;b=(b+N)%N}
+  if(a<0||b<0||a>=N||b>=N||s.some(q=>q[0]==a&&q[1]==b)){clearInterval(tk);return h.end('Game over',sc)}
+  s.unshift([a,b]);if(a==f[0]&&b==f[1]){sc+=10;h.score(sc);food()}else s.pop();draw()};
+ const turn=(a,b)=>{if(dr[0]+a||dr[1]+b)nd=[a,b]};
+ const M={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+ const kd=e=>{if(e.key in M){e.preventDefault();turn(...M[e.key])}};addEventListener('keydown',kd);
+ let sx,sy;cv.ontouchstart=e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY};
+ cv.ontouchend=e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.max(Math.abs(dx),Math.abs(dy))<20)return;
+  Math.abs(dx)>Math.abs(dy)?turn(dx>0?1:-1,0):turn(0,dy>0?1:-1)};
+ const pad=mk('div','pad');[['◀',[-1,0]],['▲',[0,-1]],['▼',[0,1]],['▶',[1,0]]].forEach(([t,v])=>{const bt=mk('button','btn s',t);bt.onclick=()=>turn(...v);pad.append(bt)});el.append(pad);
+ food();draw();tk=setInterval(step,{easy:190,medium:130,hard:80}[d]);
+ return()=>{clearInterval(tk);removeEventListener('keydown',kd)}}},
+
+breakout:{n:'Breakout',i:'🏓',k:'pts',h:'Move the paddle with your mouse, finger, or left and right arrows. You have 3 lives.',run(el,d,h){
+ const cv=mk('canvas');cv.width=320;cv.height=400;cv.style.touchAction='none';el.append(cv);const x=cv.getContext('2d');
+ const pw={easy:90,medium:66,hard:48}[d],sp={easy:4,medium:5,hard:6.5}[d];
+ let px=160-pw/2,bx=160,by=300,vx=sp*.7,vy=-sp,lv=3,sc=0,L=0,R=0,raf;
+ const br=[];for(let r=0;r<5;r++)for(let c=0;c<8;c++)br.push({x:c*40+1,y:r*20+40,a:1,c:['#ff4d5e','#ff9f43','#ffd23f','#3ddc84','#38d6ff'][r]});
+ const reset=()=>{bx=160;by=300;vx=sp*.7*(Math.random()<.5?-1:1);vy=-sp};
+ const draw=()=>{x.fillStyle='#050514';x.fillRect(0,0,320,400);br.forEach(k=>{if(k.a){x.fillStyle=k.c;x.fillRect(k.x,k.y,38,18)}});
+  x.fillStyle='#ffd23f';x.fillRect(px,384,pw,10);x.fillStyle='#fff';x.fillRect(bx-5,by-5,10,10);
+  x.fillStyle='#ff4d5e';x.font='14px monospace';x.fillText('♥'.repeat(lv),8,20)};
+ const frame=()=>{
+  px=Math.max(0,Math.min(320-pw,px+(R-L)*7));bx+=vx;by+=vy;
+  if(bx<5||bx>315){vx=-vx;bx=Math.max(5,Math.min(315,bx))}
+  if(by<5)vy=Math.abs(vy);
+  if(vy>0&&by>376&&by<392&&bx>px-4&&bx<px+pw+4){vy=-Math.abs(vy);vx=((bx-(px+pw/2))/(pw/2))*sp*1.1}
+  let hit=0;br.forEach(k=>{if(!hit&&k.a&&bx>k.x&&bx<k.x+38&&by>k.y&&by<k.y+18){hit=k.a=0;vy=-vy;sc+=10;h.score(sc)}});
+  if(by>410){lv--;if(!lv){draw();return h.end('Game over',sc)}reset()}
+  if(!br.some(k=>k.a)){draw();return h.end('You cleared the wall!',sc)}
+  draw();raf=requestAnimationFrame(frame)};
+ const kd=e=>{if(e.key=='ArrowLeft'){L=1;e.preventDefault()}if(e.key=='ArrowRight'){R=1;e.preventDefault()}};
+ const ku=e=>{if(e.key=='ArrowLeft')L=0;if(e.key=='ArrowRight')R=0};
+ addEventListener('keydown',kd);addEventListener('keyup',ku);
+ cv.onpointermove=e=>{const r=cv.getBoundingClientRect();px=Math.max(0,Math.min(320-pw,(e.clientX-r.left)/r.width*320-pw/2))};
+ frame();return()=>{cancelAnimationFrame(raf);removeEventListener('keydown',kd);removeEventListener('keyup',ku)}}},
+
+whack:{n:'Whack-a-Mole',i:'🔨',k:'pts',h:'Tap the moles for 30 seconds. Each hit is 10 points. Harder levels are faster.',run(el,d,h){
+ const up={easy:1000,medium:700,hard:480}[d];let sc=0,on=-1,fin=0,tm;const g=mk('div','ttt'),hs=[];
+ const pop=()=>{if(fin)return;hs.forEach(b=>b.textContent='');on=Math.random()*9|0;hs[on].textContent='🐹';tm=h.T(miss,up)};
+ const miss=()=>{if(fin)return;if(hs[on])hs[on].textContent='';on=-1;tm=h.T(pop,200)};
+ for(let i=0;i<9;i++){const b=mk('button','cell t');b.onclick=()=>{if(fin||i!=on)return;clearTimeout(tm);sc+=10;h.score(sc);b.textContent='💥';on=-1;tm=h.T(pop,250)};g.append(b);hs.push(b)}
+ el.append(g);h.T(()=>{fin=1;h.end('Time up!',sc)},30000);tm=h.T(pop,500)}}
+};
+
+/* ---------- SCREENS ---------- */
+function home(){
+ view(`<h1>Aurano<span>Arcade</span></h1><p class="slogan">Enter the arcade beyond</p>
+ <button class="btn big" id="play">▶ Press start</button><br>
+ <button class="btn c s" id="st">Stats</button>
+ <p class="credit">presented by Anu and Achu</p>`);
+ $('play').onclick=hub;$('st').onclick=stats;$('play').focus()}
+
+function hub(){
+ view(`<div class="bar"><button class="btn s" id="bk">◀ Home</button><h2>Choose a game</h2></div>
+ <div class="grid">${Object.entries(GAMES).map(([id,g])=>`<button class="card" data-g="${id}"><div class="ic">${g.i}</div><h3>${g.n}</h3><p>${(S[id]||{p:0}).p} plays</p></button>`).join('')}</div>`);
+ $('bk').onclick=home;document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>game(b.dataset.g,'easy'))}
+
+function stats(){
+ let P=0,T=0;const X={playerWin:'Rounds you won',computerWin:'Rounds computer won',draw:'Rounds drawn'};
+ const cards=Object.entries(GAMES).map(([id,g])=>{const r=S[id]||{p:0,t:0,b:{}};P+=r.p;T+=r.t;
+  const bs=['easy','medium','hard'].map(d=>`<tr><td>Best (${d})</td><td>${r.b[d]==null?'–':fmt(g.k,r.b[d])}</td></tr>`).join('');
+  const ex=id=='ttt'?Object.entries(X).map(([k,l])=>`<tr><td>${l}</td><td>${(r.x||{})[k]||0}</td></tr>`).join(''):'';
+  return `<div class="sc"><h3>${g.i} ${g.n}</h3><table><tr><td>Games played</td><td>${r.p}</td></tr><tr><td>Time played</td><td>${dur(r.t)}</td></tr>${bs}${ex}</table></div>`}).join('');
+ view(`<div class="bar"><button class="btn s" id="bk">◀ Home</button><h2>Your stats</h2></div>
+ <div class="hud"><div>All games<b>${P}</b></div><div>Total time<b>${dur(T)}</b></div></div>
+ <div class="grid">${cards}</div><button class="btn r s" id="rs">Reset stats</button>`);
+ $('bk').onclick=home;$('rs').onclick=()=>{if(confirm('Delete all saved stats on this device?')){S={};save();stats()}}}
+
+function game(id,d){
+ const g=GAMES[id];
+ view(`<div class="bar"><button class="btn s" id="bk">◀ Games</button><h2>${g.n}</h2></div>
+ <div class="hud"><div>Time<b id="tm">0.0</b></div><div>Score<b id="sc">0</b></div><div>Best<b id="bs">–</b></div></div>
+ <div>${['easy','medium','hard'].map(x=>`<button class="btn s ${x==d?'on':''}" data-d="${x}">${x}</button>`).join('')}</div>
+ <div class="stage" id="stg"></div><p class="note">${g.h}</p><button class="btn r" id="ag">↻ Restart</button>`);
+ $('bk').onclick=hub;$('ag').onclick=()=>game(id,d);
+ document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>game(id,b.dataset.d));
+ const best=((S[id]||{}).b||{})[d];if(best!=null)$('bs').textContent=fmt(g.k,best);
+ const t0=Date.now(),tok={};cur={tok};const el=()=>(Date.now()-t0)/1000;
+ cur.iv=setInterval(()=>$('tm').textContent=el().toFixed(1),100);
+ const h={
+  T:(f,ms)=>setTimeout(()=>cur&&cur.tok===tok&&f(),ms),
+  score:v=>$('sc').textContent=v,
+  tally:k=>{const r=S[id]=S[id]||{p:0,t:0,b:{}};r.x=r.x||{};r.x[k]=(r.x[k]||0)+1;save()},
+  end:(msg,val,lose)=>{
+   if(!cur||cur.tok!==tok||cur.done)return;cur.done=1;clearInterval(cur.iv);
+   const t=el();$('tm').textContent=t.toFixed(1);
+   const r=S[id]=S[id]||{p:0,t:0,b:{}};r.p++;r.t+=t;
+   const v=g.k=='time'?t:val;let nb=0;
+   if(!lose&&(g.k!='pts'||v>0)){const o=r.b[d];if(o==null||(g.k=='pts'?v>o:v<o)){r.b[d]=v;nb=1}}
+   save();if(r.b[d]!=null)$('bs').textContent=fmt(g.k,r.b[d]);
+   const ov=mk('div','ov');
+   ov.innerHTML=`<h3>${msg}</h3><p>${lose?'Try again!':fmt(g.k,v)+(nb?'<br>New best!':'')}</p><div><button class="btn" id="pa">Play again</button><button class="btn r s" id="ob">Games</button></div>`;
+   $('stg').append(ov);$('pa').onclick=()=>game(id,d);$('ob').onclick=hub;$('pa').focus()}};
+ cur.clean=g.run($('stg'),d,h)}
+
+home();
+</script>
+</body>
+</html>
